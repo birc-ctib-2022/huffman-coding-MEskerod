@@ -65,7 +65,7 @@ def encoding(x: str) -> Tree:
     heap: list[Tree] = [Leaf(a, count) for a, count in Counter(x).items()]
     hq.heapify(heap)
 
-    while len(heap) > 1:
+    while len(heap) > 1: 
         # FIXME: get the first two trees from the heap,
         # merge them into one new Node with a count that
         # is the sum of the two trees, and with the two
@@ -73,7 +73,11 @@ def encoding(x: str) -> Tree:
         # Remember that heap.pop() and heap.append() are
         # list operations, but you need to use the hq.heappop()
         # or hq.heappush() functions.
-        ...
+        Minimum = hq.heappop(heap)
+        NextMinimum = hq.heappop(heap)
+        count = Minimum.count + NextMinimum.count
+        node = Node(count, NextMinimum, Minimum)
+        hq.heappush(heap, node)
 
     return heap.pop()
 
@@ -93,10 +97,12 @@ def build_encoding_table(tree: Tree,
     # solution, but it gets the job done, and we don't expect
     # large trees in an application like this.
     res = res if res is not None else {}
+    
     if isinstance(tree, Leaf):
-        ...
+        res[tree.letter] = "".join(bits)
     else:
-        ...
+        build_encoding_table(tree.left, bits+tuple(["0"]), res)
+        build_encoding_table(tree.right, bits+tuple(["1"]),res )
     return res
 
 
@@ -150,8 +156,15 @@ def decode(x: bits, enc: Encoding) -> str:
             # bit, you can do that with `b = next(bits)`, and
             # then you move the node to the left or right child
             # based on the bit.
-            ...
-
+            b = next(bits)
+            if b == '0': 
+                node = node.left
+            else:
+                node = node.right
+            
+            if isinstance(node, Leaf):
+                decoding.append(node.letter)
+                node=enc.tree
     except StopIteration:
         # When we asked for a bit that wasn't there, we end
         # up here. We need to wrap up. We should only ever
@@ -179,3 +192,13 @@ class Encoding:
     def decode(self, x: bits) -> str:
         """Decode x according to this encoding."""
         return decode(x, self)
+
+
+#x = Encoding("aabacabaaa")
+x = Encoding("aaa")
+print(x.tree)
+print(x.alphabet)
+#print(x.encode('aabacabaa'))
+#y = x.encode('aabacabaa')
+#print(y)
+#print(x.decode(y))
